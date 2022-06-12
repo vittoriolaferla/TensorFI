@@ -91,6 +91,36 @@ init = tf.global_variables_initializer()
 
 # Start training
 with tf.Session() as sess:
+    import TensorFI.fiConfig as fi
+    operation=[]
+    g=open("/home/vittorio/TensorFI/confFiles/tests.yaml","r")
+    lines=g.readlines()
+    g.close()
+    g=open("/home/vittorio/TensorFI/confFiles/tests.yaml","w")
+    print(type(lines))
+    counter=0
+    for i in lines:
+        counter=counter+1
+        if(counter==6):
+            break
+    g.write(i)
+    g.write("\nInstances:\n")
+    
+    for n in tf.get_default_graph().as_graph_def().node:
+        #for op in tf.get_default_graph().get_operations():
+        string=str(n.op)
+        for f in fi.Ops:
+            if(f.value==string.upper()):
+                    #print(str(f.value) + " \n\n")
+                operation.append(f.value)
+        analized=[]
+    for op in operation:
+        if(analized.count(op)==0):
+            # print( str(op) +" = "+ str(operation.count(op)))
+            g.write(" - "+str(op) +" = "+ str(operation.count(op))+"\n")
+            analized.append(op)
+    g.write("\nInjectMode: "+ str("dynamicInstance"))        
+    g.close()
 
     # Run the initializer
     sess.run(init)
@@ -116,7 +146,7 @@ with tf.Session() as sess:
         accuracy.eval({X: mnist.test.images[:256], Y: mnist.test.labels[:256]}))
 
     # Add the fault injection code here to instrument the graph
-    fi = ti.TensorFI(sess, name = "Neural Network 4", logLevel = 50, disableInjections = False)
+    fi = ti.TensorFI(sess,configFileName="/home/vittorio/TensorFI/confFiles/tests.yaml", name = "Neural Network 4", logLevel = 20, disableInjections = False)
 
     print("Accuracy (with injections):", \
         accuracy.eval({X: mnist.test.images[:256], Y: mnist.test.labels[:256]}))

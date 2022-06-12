@@ -1,9 +1,12 @@
 # Fault injection configuration information: this is used for the global fault injector
 from enum import Enum
 import numpy as np
+
 from faultTypes import *
 import yaml
 import logging
+import imp
+
 
 # These are the list of supported Operations below (if you add a new Op, please add it here)
 class Ops(Enum):
@@ -17,7 +20,6 @@ class Ops(Enum):
 	SHAPE = "SHAPE"
 	SIZE = "SIZE"
 	FILL = "FILL"
-	FLOOR = "FLOOR"
 	FLOORMOD = "FLOOR-MOD"
 	RANGE = "RANGE"
 	RANK = "RANK"
@@ -55,11 +57,13 @@ class Ops(Enum):
 	TANH = "TANH"
 	PACK = "PACK"
 	UNPACK = "UNPACK"
+	BATCH_NORMALIZATION="BATCH-NORMALIZATION"
 	ALL = "ALL"	# Chooses all the operations for injection (end of list)
 	END = "END"  # Dummy operation for end of list
 	LRN = "LRN" 
 	ELU = "ELU"
 	RANDOM_UNIFORM = "RANDOM-UNIFORM"
+	
 # End of Ops
 
 # These are the list of supported Fault types below (if you add a new type, please add it here)
@@ -69,7 +73,16 @@ class FaultTypes(Enum):
 	ZERO = "Zero"
 	ELEM = "Rand-element"
 	ELEMbit = "bitFlip-element"
-	RANDbit = "bitFlip-tensor" 
+	RANDbit = "bitFlip-tensor"
+	RANDsingle = "singleFlip"
+	RANDbitRow ="rawbitFlip-tensor"
+	RANDbitColumn="columnbitFlip-tensor" 
+	RANDSameFeature ="sameFeatureRandom"
+	RANDbulletWake= "bulletWake"
+	RANDshutterGlass="shutterGlass"
+	RANDuncategorizze="uncategorize"
+	RANDblock="blockSameFeature"
+	RANDblockDifferent="blockDifferentFeature"
 # End of FaultTypes
 
 # These are the list of supported Fields below (if you add a new Field, please add it here)
@@ -95,11 +108,21 @@ class FIConfig(object):
 		FaultTypes.ZERO.value : (zeroScalar, zeroTensor),
 		FaultTypes.ELEM.value : (randomElementScalar, randomElementTensor),
 		FaultTypes.ELEMbit.value : (bitElementScalar, bitElementTensor),
-		FaultTypes.RANDbit.value : (bitScalar, bitTensor)
+		FaultTypes.RANDbit.value : (bitScalar, bitTensor),
+		FaultTypes.RANDsingle.value:(bitScalar,singleFlip),
+		FaultTypes.RANDbitRow.value: (bitScalar, bitTensorRow),
+		FaultTypes.RANDbitColumn.value:(bitScalar,bitTensorColumn),
+		FaultTypes.RANDSameFeature.value:(bitScalar,sameFeatureRandom),
+		FaultTypes.RANDbulletWake.value:(bitScalar,bulletWake),
+		FaultTypes.RANDshutterGlass.value:(bitScalar,shutterGlass),
+		FaultTypes.RANDuncategorizze.value:(bitScalar,uncategorize),
+		FaultTypes.RANDblock.value:(bitScalar,blockSameFeature),
+		FaultTypes.RANDblockDifferent.value:(bitScalar,blockDifferentFeature)
 	}
 
 	def faultConfigType(self, faultTypeScalar, faultTypeTensor):
 		"Configure the fault injection type for Scalars and Tensors"
+		
 
 		# Check if the fault type is known and if so, assign the scalar functions 
 		if self.faultTypeMap.has_key(faultTypeScalar):
@@ -267,7 +290,7 @@ def staticFaultParams():
 def yamlFaultParams(pStream):
 	"Read fault params from YAML file"
 	# NOTE: We assume pStream is a valid YAML stream
-	params = yaml.load(pStream)
+	params =yaml.load(pStream)
 	return params
 
 def configFaultParams(paramFile = None):

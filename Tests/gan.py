@@ -28,12 +28,13 @@ import numpy as np
 import tensorflow as tf
 import TensorFI as ti
 
+
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 
 # Training Params
-num_steps = 100000
+num_steps = 10000
 # num_steps = 10000
 batch_size = 128
 learning_rate = 0.0002

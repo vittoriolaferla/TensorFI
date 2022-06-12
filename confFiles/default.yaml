@@ -13,7 +13,7 @@
 #   5) bitFlip-element - single bit-flip over one data item in the output of the target op
 #   6) bitFlip-tensor - single bit-flip over all data items in the output of the target op 
 ScalarFaultType: None
-TensorFaultType: bitFlip-element 
+TensorFaultType: singleFlip
 
 
 # Add the list of Operations and their probabilities here
@@ -21,6 +21,7 @@ TensorFaultType: bitFlip-element
 # each line must represent an OP and it's probability value
 # See fiConfig.py for a full list of allowed OP values
 # NOTE: These should not be any tabs anywhere below
+
 
 Ops:
 # Choose operations which you want to inject

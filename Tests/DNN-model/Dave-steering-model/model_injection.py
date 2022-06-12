@@ -7,7 +7,7 @@
 import tensorflow as tf
 import scipy.misc
 import model
-import cv2
+#import cv2
 from subprocess import call
 import driving_data
 import time

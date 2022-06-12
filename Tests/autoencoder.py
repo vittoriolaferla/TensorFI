@@ -29,8 +29,8 @@ mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 
 # Training Parameters
 learning_rate = 0.01
-# num_steps = 3000
-num_steps = 30000
+num_steps = 2000
+#num_steps = 30000
 batch_size = 256
 
 display_step = 1000
@@ -97,7 +97,26 @@ init = tf.global_variables_initializer()
 # Start Training
 # Start a new TF session
 with tf.Session() as sess:
-
+    import TensorFI.fiConfig as fi
+    operation=[]
+    g=open("/home/vittorio/TensorFI/confFiles/tests.yaml","a")
+    g.write("\nInstances:\n")
+   
+    for n in tf.get_default_graph().as_graph_def().node:
+    #for op in tf.get_default_graph().get_operations():
+        string=str(n.op)
+        for f in fi.Ops:
+          if(f.value==string.upper()):
+            #print(str(f.value) + " \n\n")
+            operation.append(f.value)
+    analized=[]
+    for op in operation:
+        if(analized.count(op)==0):
+           # print( str(op) +" = "+ str(operation.count(op)))
+            g.write(" - "+str(op) +" = "+ str(operation.count(op))+"\n")
+            analized.append(op)
+    g.write("\nInjectMode: "+ str("dynamicInstance"))        
+    g.close()
     # Run the initializer
     sess.run(init)
 
@@ -125,7 +144,7 @@ with tf.Session() as sess:
     	canvas_faulty[i] = np.empty((28 * n, 28 * n))
 
     # Insert fault injection code here before image reconstruction
-    fi = ti.TensorFI( sess, name = "AutoEncoder", logLevel = 50, disableInjections = True)  
+    fi = ti.TensorFI( sess,configFileName="confFiles/tests.yaml", name = "AutoEncoder", logLevel = 50, disableInjections = True)  
     
     # Make the log files in TensorBoard	
     logs_path = "./logs"
@@ -154,7 +173,7 @@ with tf.Session() as sess:
 	config.injectMap[ ti.Ops.ADD ] = float(1.0/numFaults)
 
 	# Do the injections for 10 probability values	
-	for k in range(numFaults):
+	for k in range(1):
 
    	 	# Do another session run with injections enabled
         	fi.turnOnInjections()

@@ -33,7 +33,7 @@ def createFIFunc(opType, inputs, outputTypes, name):
 	# Create a new TensorFlow operator with the corresponding fault injection function
 	res = tf.py_func(fiFunc, inputs, outputTypes, name = name) 
 
-	#print "NewOp = ", res
+	#print ("NewOp = ", res)
 
 	return res
 # Done with createFIFunc

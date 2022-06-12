@@ -15,7 +15,7 @@ import TensorFI as ti
 
 # Parameters
 learning_rate = 0.001
-training_iters = 200000
+training_iters = 10
 batch_size = 64
 display_step = 20
 

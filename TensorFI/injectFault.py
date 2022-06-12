@@ -7,6 +7,7 @@ import logging
 from fiConfig import * 
 from fiLog import *
 from threading import current_thread
+import faultTypes as ft
 
 # FIXME: Add this to the list of dependencies for this module
 from sklearn.neighbors import KNeighborsClassifier	
@@ -21,6 +22,10 @@ logInjection = True	# log fault injection and checking
 
 # This is the initialization function for the config file 
 # and is called from TensorFI.py's constructor
+
+pathToInstance="/usr/local/lib/python2.7/dist-packages/TensorFI/instance.txt"
+
+
 
 # NOTE: This has to be in this module or else fiConf won't be accessible
 def initFIConfig(fiParams):
@@ -127,7 +132,9 @@ def logRun(runCount):
 # NOTE: We need to first call initFIConfig before these are called 
 
 def perturb(val):
+   
 	"Inject a single fault in res - fault type depends on config param"
+	
 	# Precoditions: injectScalar != None && injectTensor != None
 	
 	faultLog = getCurrentFaultLog()	# Get the fault log for the current thread
@@ -142,23 +149,26 @@ def perturb(val):
 	# Check if the object is a scalar or a tensor, and call the corresponding injection function
 	if isScalar: 
 		res = fiConf.injectScalar( vType, val.copy()) 
-	else:  
+	elif(len(np.shape(val))<4):  
+		res= ft.singleFlip( vType, val.copy())
+	else:
+    	# Enter an entry in the fault log that we injected a fault here
 		res = fiConf.injectTensor( vType, val.copy())  
-
-	# Enter an entry in the fault log that we injected a fault here
 	faultLog.updateOriginal( val )
 	faultLog.updateInjected( res )
 
 	return res
 
 # End of perturb
+#DServe per iniettare una sola volta per run
+already=True
 
 def condPerturb(op, res):
-	"Calls the perturb function if and only if the op Operation is included for injection"
-	
 	# Pre-condition: injectMap != None && skipCount != None 
 	global count	# Keeps track of how many times the selected operation(s) are executed
 	global visitedOp
+	global already
+	
 
 	faultLog = getCurrentFaultLog()	# Get the fault log for the current thread
 	
@@ -166,9 +176,10 @@ def condPerturb(op, res):
 		logging.debug("\tChecking if operation " + str(op) + " is chosen for injection")
 	
 	# Check if the operation is chosen for injection and if so, inject a fault	
- 
+	
 	if fiConf.isSelected(op): 
 		count = count + 1	# If it's selected, then update the execution count
+		
 
 		if logInjection: logging.debug("\tOperation " + str(op) + " is chosen for injection")
 		
@@ -180,8 +191,9 @@ def condPerturb(op, res):
 		
 		# If the operation exceeds the number of times it is to be skipped (default=0)
 		if (count > fiConf.skipCount):	
-
+			
  			"(1) inject faults based on the error rate"
+			 
 			if(fiConf.injectMode == "errorRate" ):
 				# Retreive the probability of perturbing this instruction
 				# and generate a random number in the interval [0, 1]
@@ -189,10 +201,10 @@ def condPerturb(op, res):
  				
 				prob = fiConf.getProbability(op)
 				rn = np.random.random()		# random.random returns a number in [0, 1] 
-				if (rn <= prob):     
+				if (rn <= prob):   
 					res = perturb(res) # Perturb is called to inject the fault  
 					faultLog.commit()  # Write the log entry to the fault log 	 
-			
+				
 			"(2) inject faults based on the dynamic instance of op, i.e., inject one instance for each op"
  			if(fiConf.injectMode == "dynamicInstance"):
 				# Retreive the total instances of this instruction
@@ -213,9 +225,20 @@ def condPerturb(op, res):
 				# not the first instance of op
 				else:							visitedOp[op] += 1	
 
+				
+				g=open(pathToInstance,"r")
+
+				numInstance=g.readline()
+
+				#Problema con la add, nell op non ADD basta lasciare cosi per quanto riguarda la ADD invece va modificato quell if e tolto 
 				# determine if the current instance is selected for injection 
-				if(visitedOp[op] == randInstanceMap[op]):   
-					res = perturb(res) 
+				if(visitedOp[op] == int(numInstance) & already):
+    					
+					print("dentro perturb " + str(already))
+					print(op)
+					print(randInstanceMap[op]) 
+					res = perturb(res)
+					already=False 
 					faultLog.updateInjectedInstance(randInstanceMap[op], instance)
 					faultLog.commit()
 
@@ -323,6 +346,8 @@ def createInjectFaultCast(type):
 	# Return the injectFaultCast function
 	return injectFaultCast
 
+    
+	
 
 def injectFaultNoop():
 	"Inject a fault in the Noop operaton - does nothing"
@@ -790,21 +815,12 @@ def injectFaultELU(a):
 def injectFaultRandomUniform(a):
 	"Function to call injectFault on Random Uniform"
 	logging.debug("Calling Operator RandomUniform" + getArgs(a))
-	ru = tf.random_uniform(a)
+	ru = tf.random.uniform(a)
 	with tf.Session() as sess:
 		res = ru.eval()
 	res = condPerturb(Ops.RANDOM_UNIFORM, res)
 	if logReturn: logging.debug("\tReturning from Random Uniform " + str(res) )
 	return res
-
-def injectFaultFloor(a):
-	"Function to call injectFault on Floor"
-	logging.debug("Calling Operator Floor" + getArgs(a))
-	res = np.floor(a)
-	res = condPerturb(Ops.FLOOR, res)
-	if logReturn: logging.debug("\tReturning from Floor " + str(res))
-	return res
-
 
 # End of implemented operators
 
@@ -1072,6 +1088,12 @@ def injectFaultAssignAdd(a):
 	logging.debug("Calling Operator AssignAdd")
 	raise NotImplementedError("AssignAdd")
 
+def injectFaultFloor(a):
+	"Function to call injectFault on Floor"
+	# FIXME: Implement this functionality
+	logging.debug("Calling Operator Floor")
+	raise NotImplementedError("Floor")
+
 def injectFaultSqueeze(a):
 	"Function to call injectFault on Squeeze"
 	# FIXME: Implement this functionality
@@ -1205,7 +1227,7 @@ opTable = {
 			"AssignAdd" : injectFaultAssignAdd,
 			"LRN" : injectFaultLRN,
 			"Elu" : injectFaultELU,
-			"Unknown": injectFaultGeneric		# Last operation
-			# "Unknown": None			# For debugging purposes
+			"Unknown": injectFaultGeneric	# Last operation
+			 #"Unknown": None			# For debugging purposes
 		}	
 
