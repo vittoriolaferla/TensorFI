@@ -485,7 +485,10 @@ else:
         key= myRV.rvs()
         if(keys[key]=="RANDOM"):
             if(len(probabilities)==1):
-                print("La probabilita di random e una, non gestiamo questo tipo casa, runnare di nuovo il programma")
+                print("La probabilita di random e una, non gestiamo questo tipo casa, runnare di nuovo il programma , oppure verra scritto singleFlip")
+                g = open(pathToConfigFile, "w")
+                g.write("ScalarFaultType: None \nTensorFaultType: singleFlip\n\nOps:\n " + op + "\n\n")
+                g.close()
                 quit()
         while(keys[key]=="RANDOM"):
             myRV = stats.rv_discrete(name="MyRandomVar", values=(counter, probabilities))
