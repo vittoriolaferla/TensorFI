@@ -1,0 +1,12 @@
+Starting log at 2022-04-12 15:22:25.511882
+
+{
+	Count : 1
+	Injected : 1.0384613
+	OpName : Ops.IDENTITY
+	Original : 1.0384613
+	Time : 0:00:00.000147
+ }
+
+---------------------------------------
+Done injections

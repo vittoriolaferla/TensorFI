@@ -1,0 +1,61 @@
+Starting log at 2022-04-12 15:22:19.539718
+
+{
+	Count : 2
+	Injected : [262144.3]
+	OpName : Ops.IDENTITY
+	Original : [0.3]
+	Time : 0:00:00.001684
+ }
+{
+	Count : 3
+	Injected : [ 262144.3   524288.6   786432.94 1048577.2 ]
+	OpName : Ops.MUL
+	Original : [ 262144.3   524288.6   786432.94 1048577.2 ]
+	Time : 0:00:00.003449
+ }
+{
+	Count : 4
+	Injected : [ 262144.   524288.4  786432.6 1048577. ]
+	OpName : Ops.ADD
+	Original : [ 262144.   524288.3  786432.6 1048577. ]
+	Time : 0:00:00.010035
+ }
+{
+	Count : 5
+	Injected : [ 262144.   524289.4  802818.6 1048580. ]
+	OpName : Ops.SUB
+	Original : [ 262144.   524289.4  786434.6 1048580. ]
+	Time : 0:00:00.011500
+ }
+{
+	Count : 6
+	Injected : [7.3014444e+10 2.7487935e+11 6.4451772e+11 1.0995200e+12]
+	OpName : Ops.SQUARE
+	Original : [6.8719477e+10 2.7487935e+11 6.4451772e+11 1.0995200e+12]
+	Time : 0:00:00.012804
+ }
+{
+	Count : 7
+	Injected : 1
+	OpName : Ops.RANK
+	Original : 1
+	Time : 0:00:00.013996
+ }
+{
+	Count : 8
+	Injected : [16]
+	OpName : Ops.RANGE
+	Original : [0]
+	Time : 0:00:00.014733
+ }
+{
+	Count : 9
+	Injected : 2091931500000.0
+	OpName : Ops.SUM
+	Original : 2091931500000.0
+	Time : 0:00:00.016047
+ }
+
+---------------------------------------
+Done injections

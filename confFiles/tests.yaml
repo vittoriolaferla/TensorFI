@@ -1,0 +1,11 @@
+ScalarFaultType: None 
+TensorFaultType: uncategorize
+
+Ops:
+  - ADD=1.0
+
+Instances:
+ - FILL = 2
+ - ADD = 1
+
+InjectMode: dynamicInstance

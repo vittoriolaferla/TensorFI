@@ -1,0 +1,19 @@
+Starting log at 2022-04-12 15:22:18.360458
+
+{
+	Count : 1
+	Injected : 7.5
+	OpName : Ops.ADD
+	Original : 7.5
+	Time : 0:00:00.000512
+ }
+{
+	Count : 2
+	Injected : 22.5
+	OpName : Ops.MUL
+	Original : 22.5
+	Time : 0:00:00.000955
+ }
+
+---------------------------------------
+Done injections
